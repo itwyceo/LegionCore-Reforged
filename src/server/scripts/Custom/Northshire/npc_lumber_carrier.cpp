@@ -236,28 +236,21 @@ public:
 
             // The core already launches the waypoint walk from
             // creature_addon.path_id while spawning. Only re-arm it when the
-            // slot really is empty (evade / reset after spawn). Re-issuing
-            // MovePath unconditionally would restart the loop from node 0 on
-            // every single Reset and the peasant would never get anywhere.
-            // Resolve the path ONCE, from the same store MovementInform()
-            // measures, and hand the generator the path OBJECT rather than its
-            // id.
+            // slot really is empty (evade / reset after spawn). Re-issuing the
+            // walk unconditionally would restart the loop from node 0 on every
+            // single Reset and the peasant would never get anywhere.
             //
-            // Why not MovePath(pathId, ...)? That constructor stores the id, and
-            // WaypointMovementGenerator::LoadPath() resolves a NON-ZERO id
-            // through sWaypointMgr->GetPathScript() -- i.e. against the
-            // waypoint_data_script table, which is a DIFFERENT table from the
-            // waypoint_data one that GetPath() reads. When both tables hold an
-            // entry under the same id but with a different node count, the
-            // creature walks one path while we measure another, so the
-            // "id + 1 >= path->size()" test never fires. That is exactly the
-            // "first node switches, last node does not" symptom.
-            //
-            // The WaypointPath& overload builds the generator with
-            // _loadedFromDB = false and _path pointing straight at our vector,
-            // so it walks precisely the path we measured. The const_cast is
-            // safe: the generator only ever reads through that pointer, and the
-            // vector lives in WaypointMgr's store for the server's lifetime.
+            // Why InitDefault() and not MovePath(pathId, ...)? MotionMaster::
+            // MovePath() rejects a path id of 0, and a NON-ZERO id makes
+            // WaypointMovementGenerator::LoadPath() resolve through
+            // sWaypointMgr->GetPathScript() -- i.e. the waypoint_data_script
+            // table, which is a DIFFERENT table from the waypoint_data one that
+            // GetPath() reads (and that the core's own default generator uses
+            // through id 0). When the two tables disagree on the node count the
+            // creature walks one path while MovementInform() measures another,
+            // so the delivery node test never fires. InitDefault() rebuilds the
+            // creature's default generator with id 0, which walks precisely the
+            // path measured below.
             WaypointPath const* path = sWaypointMgr->GetPath(me->GetWaypointPath());
             if (!path || path->empty())
             {
@@ -301,7 +294,7 @@ public:
                 me->GetGUIDLow(), me->GetWaypointPath(), uint32(path->size()), _deliveryNode);
 
             if (me->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_IDLE) != WAYPOINT_MOTION_TYPE)
-                me->GetMotionMaster()->MovePath(*const_cast<WaypointPath*>(path), true);
+                me->GetMotionMaster()->InitDefault();
         }
 
         // OnArrived() forwards the ZERO based node index, so id == 0 is the

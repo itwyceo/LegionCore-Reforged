@@ -73,6 +73,15 @@ if((PLATFORM EQUAL 64) OR (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0.2302
   message(STATUS "MSVC: Enabled increased number of sections in object files")
 endif()
 
+# Sources are UTF-8 without BOM: without this MSVC reads them as the system
+# code page and warns (C4819) on every non-ASCII comment or string.
+# C4828 is silenced: a few legacy comments (and G3D headers) still carry
+# stray bytes that are not valid UTF-8; they are never part of the code.
+target_compile_options(trinity-compile-option-interface
+  INTERFACE
+    /utf-8
+    /wd4828)
+
 # /Zc:throwingNew.
 # When you specify Zc:throwingNew on the command line, it instructs the compiler to assume
 # that the program will eventually be linked with a conforming operator new implementation,

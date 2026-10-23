@@ -9923,7 +9923,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool sendInChat/* = false*/,
         // As in TrinityCore: a gain crossing the cap keeps what fits. The removed test was always true
         // for a gain, so crossing the cap gave nothing at all.
         // a cap lowered below what was already earned this week must not turn the gain into a loss
-        newTotalCount = oldTotalCount + (oldWeekCount < currency->MaxEarnablePerWeek ? currency->MaxEarnablePerWeek - oldWeekCount : 0);
+        newTotalCount = oldTotalCount + (int32(oldWeekCount) < currency->MaxEarnablePerWeek ? currency->MaxEarnablePerWeek - int32(oldWeekCount) : 0);
     }
 
     // if we get more then totalCap set to maximum;
