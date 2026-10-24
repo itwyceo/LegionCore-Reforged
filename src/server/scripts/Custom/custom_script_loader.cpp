@@ -5,6 +5,7 @@ void AddSC_custom_artifact_knowledge();
 void AddSC_custom_silithus_wound();
 void AddSC_northshire_brother_paxton();
 void AddSC_npc_lumber_carrier();
+void AddSC_hallows_end_throw_bucket();
 
 // npc_stormwind_infantry / npc_blackrock_battle_worg / npc_injured_stormwind_infantry_dummy
 // are deliberately NOT registered from here. Those three CreatureScript names belong to
@@ -20,4 +21,5 @@ void AddCustomScripts()
     AddSC_custom_silithus_wound();
     AddSC_northshire_brother_paxton();
     AddSC_npc_lumber_carrier();
+    AddSC_hallows_end_throw_bucket();
 }
