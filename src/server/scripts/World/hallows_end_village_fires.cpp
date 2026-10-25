@@ -99,11 +99,11 @@ static HorsemanVillage const Villages[] =
     { 1,   {  306.7f,  -4727.1f,  45.0f  }, 40.0f, {  313.83f, -4730.23f,   9.9f    }, {  288.6f,  -4564.5f,   39.0f  } }, // Razor Hill
 };
 
-uint32 const EVENT_DURATION         = 390 * IN_MILLISECONDS;
-uint32 const FIRE_PASS_INTERVAL     = 15 * IN_MILLISECONDS;
-uint32 const PRACTICE_RELIGHT_DELAY = 5 * IN_MILLISECONDS;
+uint32 const EVENT_DURATION         = 120 * IN_MILLISECONDS;
+uint32 const FIRE_PASS_INTERVAL     = 8 * IN_MILLISECONDS;
+uint32 const PRACTICE_RELIGHT_DELAY = 3 * IN_MILLISECONDS;
 uint8 const FIRE_MAX_LEVEL          = 3;
-float const FIRE_SPREAD_RANGE       = 7.0f;
+float const FIRE_SPREAD_RANGE       = 4.0f;
 float const VILLAGE_PLAYER_RANGE    = 100.0f;
 
 static HorsemanVillage const* FindVillage(WorldObject const* object, float maxDist)
