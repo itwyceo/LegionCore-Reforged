@@ -12,7 +12,8 @@ CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE_SOURCES
   # Exclude
-  ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders)
+  ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
+  ${CMAKE_CURRENT_SOURCE_DIR}/Eluna/lua_src)
 
 if (USE_COREPCH)
   set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
@@ -23,6 +24,41 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(game
   ${PRIVATE_SOURCES}
 )
+
+# ---------------------------------------------------------------------------
+# Eluna 7.3.5
+# CollectSourceFiles 只收集 .cpp，Lua 5.1 的 C 源码需要单独编译。
+# 不能直接加进 game：game 启用了 C++ PCH，C 源码会触发 STL1003。
+# ---------------------------------------------------------------------------
+file(GLOB ELUNA_LUA_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/Eluna/lua_src/*.c")
+
+list(REMOVE_ITEM ELUNA_LUA_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/Eluna/lua_src/lua.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Eluna/lua_src/luac.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Eluna/lua_src/print.c")
+
+add_library(eluna_lua STATIC
+  ${ELUNA_LUA_SOURCES})
+
+set_target_properties(eluna_lua PROPERTIES
+  LINKER_LANGUAGE C)
+
+target_include_directories(eluna_lua PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/Eluna"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Eluna/lua_src")
+
+target_compile_definitions(eluna_lua PRIVATE
+  LUA_COMPAT_MODULE)
+
+target_compile_definitions(game PRIVATE
+  ELUNA_TRINITY
+  ELUNA_EXPANSION=6
+  LUA_COMPAT_MODULE)
+
+target_link_libraries(game
+  PUBLIC
+    eluna_lua)
 
 CollectIncludeDirectories(
   ${CMAKE_CURRENT_SOURCE_DIR}

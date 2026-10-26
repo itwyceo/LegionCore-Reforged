@@ -2894,3 +2894,51 @@ QuestPOI.DisableErrors = 1
 
 #
 ###################################################################################################
+# ELUNA LUA ENGINE
+###################################################################################################
+
+#
+#    Eluna.Enabled
+#        Enable the embedded Eluna Lua engine.
+#        Default: 1 - (Enabled)
+
+Eluna.Enabled = 1
+
+#
+#    Eluna.TraceBack
+#        Show Lua stack traces on script errors.
+#        Default: 1 - (Enabled)
+
+Eluna.TraceBack = 1
+
+#
+#    Eluna.ScriptPath
+#        Directory containing your Lua scripts, relative to worldserver.
+#        Default: "lua_scripts"
+
+Eluna.ScriptPath = "lua_scripts"
+
+#
+#    Eluna.RequirePaths
+#    Eluna.RequireCPaths
+#        Extra entries appended to Lua package.path / package.cpath.
+#        Default: "" (none)
+
+Eluna.RequirePaths = ""
+Eluna.RequireCPaths = ""
+
+#
+#    Eluna.ReloadCommand
+#        Enable the .reload eluna command.
+#        Default: 1 - (Enabled)
+
+Eluna.ReloadCommand = 1
+
+#
+#    Eluna.ReloadSecurityLevel
+#        Minimum account security level allowed to reload Eluna.
+#        Default: 3
+
+Eluna.ReloadSecurityLevel = 3
+
+###################################################################################################

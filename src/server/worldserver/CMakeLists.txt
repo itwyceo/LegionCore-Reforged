@@ -85,6 +85,31 @@ if( WIN32 )
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/worldserver.conf.dist ${CMAKE_BINARY_DIR}/bin/
     )
   endif()
+
+  # Eluna: 每次编译后把 lua_scripts 和运行库复制到输出目录
+  add_custom_command(TARGET worldserver
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:worldserver>/lua_scripts"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${CMAKE_SOURCE_DIR}/src/server/game/Eluna/lua_scripts"
+      "$<TARGET_FILE_DIR:worldserver>/lua_scripts"
+  )
+
+  set(ELUNA_RUNTIME_DLL_DIR "E:/LegionCore/Release"
+    CACHE PATH "Directory containing libmysql.dll / libssl-3-x64.dll / libcrypto-3-x64.dll")
+
+  if( EXISTS "${ELUNA_RUNTIME_DLL_DIR}" )
+    foreach(ELUNA_DLL libmysql.dll libssl-3-x64.dll libcrypto-3-x64.dll)
+      if( EXISTS "${ELUNA_RUNTIME_DLL_DIR}/${ELUNA_DLL}" )
+        add_custom_command(TARGET worldserver
+          POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${ELUNA_RUNTIME_DLL_DIR}/${ELUNA_DLL}"
+            "$<TARGET_FILE_DIR:worldserver>"
+        )
+      endif()
+    endforeach()
+  endif()
 endif()
 
 if( UNIX )

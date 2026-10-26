@@ -22,6 +22,9 @@
 
 #include "Define.h"
 
+// Eluna 7.3.5
+void AddSC_eluna();
+
 @TRINITY_SCRIPTS_FORWARD_DECL@
 #ifdef TRINITY_IS_DYNAMIC_SCRIPTLOADER
 #  include "revision_data.h"
@@ -49,6 +52,7 @@ TC_SCRIPT_API char const* GetScriptModule()
 /// Exposed in script modules to register all scripts to the ScriptMgr.
 TC_SCRIPT_API void AddScripts()
 {
+    AddSC_eluna();
 @TRINITY_SCRIPTS_INVOKE@}
 
 /// Exposed in script modules to get the build directive of the module.

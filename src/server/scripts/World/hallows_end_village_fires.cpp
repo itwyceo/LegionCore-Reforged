@@ -100,7 +100,7 @@ static HorsemanVillage const Villages[] =
 };
 
 uint32 const EVENT_DURATION         = 120 * IN_MILLISECONDS;
-uint32 const FIRE_PASS_INTERVAL     = 8 * IN_MILLISECONDS;
+uint32 const FIRE_PASS_INTERVAL     = 15 * IN_MILLISECONDS;
 uint32 const PRACTICE_RELIGHT_DELAY = 3 * IN_MILLISECONDS;
 uint8 const FIRE_MAX_LEVEL          = 3;
 float const FIRE_SPREAD_RANGE       = 4.0f;
