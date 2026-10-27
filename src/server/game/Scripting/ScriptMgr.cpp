@@ -2022,6 +2022,11 @@ void ScriptMgr::OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId
     tmpscript->OnRelocate(transport, waypointId, mapId, x, y, z);
 }
 
+void ScriptMgr::OnWorldUpdate(uint32 diff)
+{
+    FOREACH_SCRIPT(WorldScript)->OnUpdate(diff);
+}
+
 void ScriptMgr::OnStartup()
 {
     FOREACH_SCRIPT(WorldScript)->OnStartup();

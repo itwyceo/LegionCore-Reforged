@@ -36,9 +36,12 @@ EndScriptData */
 #define LOCALE_TRICK_OR_TREAT_2 "Des bonbons ou des blagues!"
 #define LOCALE_TRICK_OR_TREAT_3 "Süßes oder Saures!"
 #define LOCALE_TRICK_OR_TREAT_6 "¡Truco o trato!"
+#define LOCALE_TRICK_OR_TREAT_4 "不给糖就捣蛋！"
+#define LOCALE_BROWSE_GOODS_4   "我想看看你的货物。"
 
 #define LOCALE_INNKEEPER_0 "Make this inn my home."
 #define LOCALE_INNKEEPER_3 "Ich möchte dieses Gasthaus zu meinem Heimatort machen."
+#define LOCALE_INNKEEPER_4 "把这里设为我的家。"
 
 class npc_innkeeper : public CreatureScript
 {
@@ -55,6 +58,7 @@ public:
                 case LOCALE_frFR: localizedEntry = LOCALE_TRICK_OR_TREAT_2; break;
                 case LOCALE_deDE: localizedEntry = LOCALE_TRICK_OR_TREAT_3; break;
                 case LOCALE_esES: localizedEntry = LOCALE_TRICK_OR_TREAT_6; break;
+                case LOCALE_zhCN: localizedEntry = LOCALE_TRICK_OR_TREAT_4; break;
                 case LOCALE_enUS: default: localizedEntry = LOCALE_TRICK_OR_TREAT_0;
             }
             player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, localizedEntry, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+HALLOWEEN_EVENTID);
@@ -64,7 +68,10 @@ public:
             player->PrepareQuestMenu(creature->GetGUID());
 
         if (creature->isVendor())
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::Vendor, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+        {
+            const char* localizedGoods = player->GetSession()->GetSessionDbcLocale() == LOCALE_zhCN ? LOCALE_BROWSE_GOODS_4 : GOSSIP_TEXT_BROWSE_GOODS;
+            player->ADD_GOSSIP_ITEM(GossipOptionNpc::Vendor, localizedGoods, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+        }
 
         if (creature->isInnkeeper())
         {
@@ -72,6 +79,7 @@ public:
             switch (player->GetSession()->GetSessionDbcLocale())
             {
                 case LOCALE_deDE: localizedEntry = LOCALE_INNKEEPER_3; break;
+                case LOCALE_zhCN: localizedEntry = LOCALE_INNKEEPER_4; break;
                 case LOCALE_enUS: default: localizedEntry = LOCALE_INNKEEPER_0;
             }
             player->ADD_GOSSIP_ITEM(GossipOptionNpc::Binder, localizedEntry, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INN);

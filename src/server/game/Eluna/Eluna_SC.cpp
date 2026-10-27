@@ -23,6 +23,7 @@
 #include "Item.h"
 #include "AuctionHouseMgr.h"
 #include "Group.h"
+#include "GameTime.h"
 #include "Vehicle.h"
 
 namespace

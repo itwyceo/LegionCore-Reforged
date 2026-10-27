@@ -870,6 +870,7 @@ class TC_GAME_API ScriptMgr
         void OnMotdChange(std::string& newMotd);
         void OnShutdownInitiate(ShutdownExitCode code, ShutdownMask mask);
         void OnShutdownCancel();
+        void OnWorldUpdate(uint32 diff);
         void OnStartup();
         void OnShutdown();
 

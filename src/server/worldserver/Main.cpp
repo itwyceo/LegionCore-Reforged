@@ -63,6 +63,7 @@
 
 #ifdef WIN32
 #include <windows.h>
+#include <locale.h>
 #else
 #include <pthread.h>
 #include <signal.h>
@@ -125,6 +126,13 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
 /// Launch the Trinity server
 extern int main(int argc, char **argv)
 {
+#ifdef _WIN32
+    // 源码是 UTF-8（/utf-8 编译），控制台默认是 GBK(936)，不切换就会乱码。
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    setlocale(LC_ALL, ".UTF8");
+#endif
+
     signal(SIGABRT, &Trinity::AbortHandler);
 
     auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);

@@ -102,7 +102,7 @@ void ElunaLoader::LoadScripts()
 #endif
 
     printf("\n======================================================\n");
-    printf("[Eluna 物理打印]: 正在搜索此目录下的 Lua 脚本: %s\n", lua_folderpath.c_str());
+    printf("[Eluna]: Searching Lua scripts in: %s\n", lua_folderpath.c_str());
     printf("======================================================\n");
 
     lua_State* L = luaL_newstate();
@@ -129,7 +129,7 @@ void ElunaLoader::LoadScripts()
     if (!m_requirecPath.empty())
         m_requirecPath.erase(m_requirecPath.end() - 1);
 
-    printf("[Eluna 物理打印]: 成功加载并编译了 %u 个脚本！耗时: %u 毫秒\n", uint32(m_scriptCache.size()), ElunaUtil::GetTimeDiff(oldMSTime));
+    printf("[Eluna]: Loaded and compiled %u script(s) in %u ms\n", uint32(m_scriptCache.size()), ElunaUtil::GetTimeDiff(oldMSTime));
     printf("======================================================\n\n");
 
     m_cacheState = SCRIPT_CACHE_READY;
