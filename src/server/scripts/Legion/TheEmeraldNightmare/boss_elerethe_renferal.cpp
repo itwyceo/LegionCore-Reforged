@@ -1150,7 +1150,7 @@ class spell_elerethe_web_of_pain : public AuraScript
     {
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_elerethe_web_of_pain::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
         OnEffectAbsorb += AuraEffectAbsorbFn(spell_elerethe_web_of_pain::Absorb, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_elerethe_web_of_pain::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_elerethe_web_of_pain::OnTick, EFFECT_1, SPELL_AURA_ANY);
     }
 };
 

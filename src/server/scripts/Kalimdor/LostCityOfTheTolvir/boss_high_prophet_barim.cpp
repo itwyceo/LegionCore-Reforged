@@ -882,8 +882,10 @@ class spell_copy_melee_weapon : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_copy_melee_weapon::ApplyEffect, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_copy_melee_weapon::RemoveEffect, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        // 69893 (Copy Melee Weapon) 在 7.3.5 的 EFFECT_0 光环是 67 = SPELL_AURA_MOD_DISARM，
+        // 旧代码写的 PERIODIC_DUMMY 是 3.x 的值，导致 handler 从未执行过。
+        OnEffectApply += AuraEffectApplyFn(spell_copy_melee_weapon::ApplyEffect, EFFECT_0, SPELL_AURA_MOD_DISARM, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_copy_melee_weapon::RemoveEffect, EFFECT_0, SPELL_AURA_MOD_DISARM, AURA_EFFECT_HANDLE_REAL);
     }
 };
 

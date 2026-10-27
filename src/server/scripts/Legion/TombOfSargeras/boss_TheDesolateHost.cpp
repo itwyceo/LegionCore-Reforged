@@ -1932,14 +1932,21 @@ class spell_tos_spiritual_barrier_dissonance : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectRemoveFn(spell_tos_spiritual_barrier_dissonance::OnApply, EFFECT_0, SPELL_AURA_PHASE, AURA_EFFECT_HANDLE_REAL);
-        OnEffectApply += AuraEffectRemoveFn(spell_tos_spiritual_barrier_dissonance::OnApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectApply += AuraEffectRemoveFn(spell_tos_spiritual_barrier_dissonance::OnApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_tos_spiritual_barrier_dissonance::OnRemove, EFFECT_0, SPELL_AURA_PHASE, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_tos_spiritual_barrier_dissonance::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_tos_spiritual_barrier_dissonance::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectUpdate += AuraEffectUpdateFn(spell_tos_spiritual_barrier_dissonance::OnUpdate, EFFECT_0, SPELL_AURA_PHASE);
-        OnEffectUpdate += AuraEffectUpdateFn(spell_tos_spiritual_barrier_dissonance::OnUpdate, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        // 本脚本绑 4 个法术，在本 core（按默认难度数据）的 effect 布局分成两派：
+        //   235113 / 235620 : EI0 = Effect 46（无光环），EI1 = 4  SPELL_AURA_DUMMY
+        //   235732 / 235734 : EI0 = 261 SPELL_AURA_PHASE（Phase 8308 / 8309），无 EI1
+        // 一条 hook 无法同时精确匹配两派，原来的 6 条绑定会交叉误报 16 条。
+        // EFFECT_ALL 会遍历所有 effect，配合 SPELL_AURA_ANY 后每个法术恰好只命中“有光环的那个”，
+        // mask 各一位（235113/620 -> EI1，235732/734 -> EI0），Apply/Remove 的触发次数与原来完全一致。
+        // 注意：空 effect（ApplyAuraName == 0）即使声明 ANY 也返回 false，所以不会被误命中。
+        OnEffectApply += AuraEffectApplyFn(spell_tos_spiritual_barrier_dissonance::OnApply, EFFECT_ALL, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_tos_spiritual_barrier_dissonance::OnRemove, EFFECT_ALL, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+
+        // OnEffectUpdate 不在 _Validate 的检查列表里（绑错不会报警，也不会进日志），
+        // 原来的 EI0+PHASE / EI1+PERIODIC_DUMMY 使 235113/235620 的 mask 为空，
+        // 导致它们的 OnUpdate 从未执行（英雄难度下不施放 239014/239015 刺耳过滤器）。
+        // 同样改为 EFFECT_ALL + ANY，让两派都能命中，每个法术仍只触发一次。
+        OnEffectUpdate += AuraEffectUpdateFn(spell_tos_spiritual_barrier_dissonance::OnUpdate, EFFECT_ALL, SPELL_AURA_ANY);
     }
 };
 

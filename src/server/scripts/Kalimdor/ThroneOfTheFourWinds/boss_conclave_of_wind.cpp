@@ -1123,8 +1123,12 @@ public:
 
         void Register()
         {
-            OnEffectApply += AuraEffectApplyFn(spell_hurricane_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
-            OnEffectRemove += AuraEffectRemoveFn(spell_hurricane_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            // 86492 的 EI0 在 7.3.5 的 DBC 里是 236 SPELL_AURA_CONTROL_VEHICLE（控制载具），
+            // 不是 12 SPELL_AURA_MOD_STUN；原绑定从未命中，钩子从未执行。
+            // 与本脚本的语义一致：Apply 时把目标 EnterVehicle 到施法者（46419 的 VehicleId=1185），
+            // Remove 时清空施法者载具上的全部乘客。
+            OnEffectApply += AuraEffectApplyFn(spell_hurricane_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_CONTROL_VEHICLE, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_hurricane_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_CONTROL_VEHICLE, AURA_EFFECT_HANDLE_REAL);
         }
     };
 

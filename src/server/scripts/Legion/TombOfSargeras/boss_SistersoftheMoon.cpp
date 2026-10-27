@@ -1233,12 +1233,13 @@ class spell_sistersmoon_embrace_eclipse : public AuraScript
 
     void Register() override
     {
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sistersmoon_embrace_eclipse::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB);
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sistersmoon_embrace_eclipse::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-        OnEffectRemove += AuraEffectRemoveFn(spell_sistersmoon_embrace_eclipse::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_sistersmoon_embrace_eclipse::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
-        OnEffectAbsorb += AuraEffectAbsorbFn(spell_sistersmoon_embrace_eclipse::Absorb, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB);
-        OnEffectAbsorb += AuraEffectAbsorbFn(spell_sistersmoon_embrace_eclipse::Absorb, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+        // 本脚本绑 233263(EI0=301 SPELL_AURA_SCHOOL_HEAL_ABSORB) 与 233264(EI0=69 SPELL_AURA_SCHOOL_ABSORB)。
+        // 每个 hook 会独立对全部绑定法术校验，原写法（两种光环各一条，共 6 条）会互相误报 6 条。
+        // 两条 hook 覆盖的是同一个 index(EI0)，并集正好等于两个法术的光环集合，
+        // 因此合并为一条 SPELL_AURA_ANY 是严格等价的：mask 仍只有 EI0 一位，每法术各触发一次。
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sistersmoon_embrace_eclipse::CalculateAmount, EFFECT_0, SPELL_AURA_ANY);
+        OnEffectRemove += AuraEffectRemoveFn(spell_sistersmoon_embrace_eclipse::OnRemove, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectAbsorb += AuraEffectAbsorbFn(spell_sistersmoon_embrace_eclipse::Absorb, EFFECT_0, SPELL_AURA_ANY);
     }
 };
 

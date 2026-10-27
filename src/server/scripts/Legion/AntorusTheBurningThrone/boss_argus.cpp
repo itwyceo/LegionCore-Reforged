@@ -1791,6 +1791,9 @@ class spell_argus_titanforging_energize_periodic : public AuraScript
 
     void OnReductedTick(AuraEffect const* aurEff)
     {
+        if (GetId() != SPELL_TITANFORGING_PERIODIC_REDUCT_ENERGY)
+            return;
+
         auto caster = GetCaster();
         if (!caster)
             return;
@@ -1801,6 +1804,9 @@ class spell_argus_titanforging_energize_periodic : public AuraScript
 
     void OnCheckTick(AuraEffect const* aurEff)
     {
+        if (GetId() != SPELL_KHAZGOROTH_ENERGY_BAR)
+            return;
+
         auto caster = GetCaster();
         if (!caster)
             return;
@@ -1833,8 +1839,8 @@ class spell_argus_titanforging_energize_periodic : public AuraScript
 
     void Register() override
     {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_argus_titanforging_energize_periodic::OnReductedTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_argus_titanforging_energize_periodic::OnCheckTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_argus_titanforging_energize_periodic::OnReductedTick, EFFECT_ALL, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_argus_titanforging_energize_periodic::OnCheckTick, EFFECT_ALL, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 

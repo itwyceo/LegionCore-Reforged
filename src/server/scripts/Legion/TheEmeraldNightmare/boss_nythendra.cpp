@@ -488,7 +488,6 @@ class spell_nythendra_volatile_rot : public AuraScript
     void Register() override
     {
         OnEffectRemove += AuraEffectRemoveFn(spell_nythendra_volatile_rot::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_nythendra_volatile_rot::OnRemove, EFFECT_2, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL);
     }
 };
 

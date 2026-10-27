@@ -68,7 +68,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
 
             void Register() override
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_monk_storm_earth_and_fire_AuraScript::RemoveEff, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_monk_storm_earth_and_fire_AuraScript::RemoveEff, EFFECT_3, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -91,13 +91,20 @@ public:
         {
             if (Unit* caster = GetCaster())
                 if (caster->GetTypeId() == TYPEID_PLAYER)
-                    if (!caster->m_SummonSlot[13] && !caster->m_SummonSlot[14])
+                    // 分身的召唤槽由 SummonProperties 决定：3720(地灵 69792)=Slot 3、3390(火灵 69791)=Slot 4。
+                    // 原写的 [13]/[14] 在本 core 永远为空（[13] 只给战士 Ravager 用，[14] 无人写），
+                    // 一旦钩子生效就会始终判定“没有分身”并立刻移除 137639，故改为 3/4，
+                    // 与 Unit.cpp 里 137639 的 SEF 逻辑（for i = 3; i < 5）保持一致。
+                    if (!caster->m_SummonSlot[3] && !caster->m_SummonSlot[4])
                         caster->RemoveAura(137639);
         }
 
         void Register() override
         {
-            AfterEffectApply += AuraEffectApplyFn(spell_monk_storm_earth_and_fire_clone_visualAuraScript::ApplyEff, EFFECT_2, SPELL_AURA_OVERRIDE_SPELL_VISUAL, AURA_EFFECT_HANDLE_REAL);
+            // 138080/138081/138083 各自只有 1 个 effect，EI0 的光环是 312 SPELL_AURA_ANIM_REPLACEMENT_SET
+            // （不是 403 SPELL_AURA_OVERRIDE_SPELL_VISUAL，也不存在 EI2）：原绑定从未命中过，
+            // 启动时会刷 3 条 did-not-match 报警且 handler 永不执行。现按 DBC 改为 EFFECT_0 + 312。
+            AfterEffectApply += AuraEffectApplyFn(spell_monk_storm_earth_and_fire_clone_visualAuraScript::ApplyEff, EFFECT_0, SPELL_AURA_ANIM_REPLACEMENT_SET, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
@@ -1521,8 +1528,8 @@ class spell_monk_hurricane_strike : public SpellScriptLoader
 
             void Register() override
             {
-                OnEffectApply += AuraEffectApplyFn(spell_monk_hurricane_strike_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_ALLOW_ONLY_ABILITY, AURA_EFFECT_HANDLE_REAL);
-                OnEffectUpdate += AuraEffectUpdateFn(spell_monk_hurricane_strike_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_ALLOW_ONLY_ABILITY);
+                OnEffectApply += AuraEffectApplyFn(spell_monk_hurricane_strike_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectUpdate += AuraEffectUpdateFn(spell_monk_hurricane_strike_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
             }
         };
 

@@ -1222,8 +1222,13 @@ class spell_gen_clone_weapon_aura : public SpellScriptLoader
 
             void Register() override
             {
-                OnEffectApply += AuraEffectApplyFn(spell_gen_clone_weapon_auraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-                OnEffectRemove += AuraEffectRemoveFn(spell_gen_clone_weapon_auraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                // 该 AuraScript 绑了 6 个法术，EFFECT_0 的光环分两种：
+                //   67  SPELL_AURA_MOD_DISARM      -> 41054, 69893
+                //   226 SPELL_AURA_PERIODIC_DUMMY -> 45205, 57594, 63418, 69896
+                // 同一个 hook 只能声明一种 AuraName，且每个 hook 独立校验、不符即报错；
+                // 拆成两组绑定会互相报错（实测报警从 84 涨到 92），故只能用 SPELL_AURA_ANY。
+                OnEffectApply += AuraEffectApplyFn(spell_gen_clone_weapon_auraScript::OnApply, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                OnEffectRemove += AuraEffectRemoveFn(spell_gen_clone_weapon_auraScript::OnRemove, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
             }
 
         };
@@ -3473,9 +3478,17 @@ public:
 
         void Register() override
         {
-            OnEffectApply += AuraEffectApplyFn(spell_brewfest_speed_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED, AURA_EFFECT_HANDLE_REAL);
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_brewfest_speed_AuraScript::HandleEffectPeriodic,EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-            OnEffectRemove += AuraEffectRemoveFn(spell_brewfest_speed_AuraScript::HandleEffectRemove, EFFECT_2, SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED, AURA_EFFECT_HANDLE_REAL);
+            // 本脚本被 42992/42993/42994/43310/43332 共用，但 7.3.5 的 effect 布局并不一致：
+            //   42992/42993/42994 : EI0=32 MOD_INCREASE_MOUNTED_SPEED, EI1=226 PERIODIC_DUMMY, EI2=191
+            //   43310 (Normal)    : EI0=33 MOD_DECREASE_SPEED,       EI1=226, EI2=191
+            //   43332 (Exhausted) : EI0=33,                          EI1=191, 只有 2 个 effect（无 EI2）
+            // 每个 hook 独立校验、不符即报错，无法按法术拆成多组绑定；且空 effect 连 SPELL_AURA_ANY
+            // 也通不过（EffectAuraNameCheck::Check 对 ApplyAuraName==0 直接返回 false）。
+            // 故统一落在 EI0 / EI1 并用 SPELL_AURA_ANY：这 5 个法术这两个下标的光环都非空，
+            // 每个 hook 仍只命中 1 个 effect，触发次数与时机不变（handler 本身也不使用 aurEff）。
+            OnEffectApply += AuraEffectApplyFn(spell_brewfest_speed_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_brewfest_speed_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_ANY);
+            OnEffectRemove += AuraEffectRemoveFn(spell_brewfest_speed_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
@@ -5213,7 +5226,10 @@ public:
         void Register() override
         {
             AfterEffectApply += AuraEffectApplyFn(spell_mercenary_contract_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_mercenary_contract_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+            // 193472 / 193475 的 EI0 光环在 7.3.5 的 DBC 里都是 4 SPELL_AURA_DUMMY（各只有 1 个 effect），
+            // 原 AfterEffectRemove 写的是 56 SPELL_AURA_TRANSFORM，导致移除钩子从未执行、
+            // 跨阵营战场里佣兵合约到期后变形效果不会被移除。
+            AfterEffectRemove += AuraEffectRemoveFn(spell_mercenary_contract_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         }
     };
 

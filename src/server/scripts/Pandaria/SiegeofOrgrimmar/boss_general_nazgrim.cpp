@@ -1247,9 +1247,14 @@ public:
 
         void Register()
         {
-            OnEffectRemove += AuraEffectRemoveFn(spell_generic_stance_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_ENERGIZE, AURA_EFFECT_HANDLE_REAL);        //143589
-            OnEffectRemove += AuraEffectRemoveFn(spell_generic_stance_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);  //143594
-            OnEffectRemove += AuraEffectRemoveFn(spell_generic_stance_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL); //143593
+            // 143589 / 143593 / 143594 共用本 AuraScript，三个法术的 EI0 光环各不相同：
+            //   143589 -> 24 SPELL_AURA_PERIODIC_ENERGIZE
+            //   143593 -> 87 SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN
+            //   143594 -> 79 SPELL_AURA_MOD_DAMAGE_PERCENT_DONE
+            // 每个 hook 会独立对全部绑定法术校验，拆成三条等于三次断言、互相报错（共 6 条报警）；
+            // 而 HandleRemove 完全不使用 aurEff，也不看光环类型，故合并为一条 + SPELL_AURA_ANY。
+            // 三个法术 EI0 光环都非空，mask 仍只含 EI0 一位，每个法术移除时仍只触发一次。
+            OnEffectRemove += AuraEffectRemoveFn(spell_generic_stance_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
         }
     };
 

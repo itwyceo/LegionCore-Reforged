@@ -870,13 +870,23 @@ class spell_skovald_aegis_remove : public SpellScriptLoader
                 GetTarget()->CastSpell(GetTarget(), 193991, true);
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, float& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float& amount, bool& /*canBeRecalculated*/)
             {
+                // 钩子改成 SPELL_AURA_ANY 后会同时挂在 193783 的 EI1 上，而那里是
+                // SPELL_AURA_DUMMY、数值 194015；AuraEffect::CalculateAmount 对所有光环都会
+                // 调用本钩子，故必须先按光环类型过滤，避免把 194015 覆盖成 -1。
+                if (aurEff->GetAuraType() != SPELL_AURA_SCHOOL_ABSORB)
+                    return;
+
                 amount = -1;
             }
 
             void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, float& absorbAmount)
             {
+                // 同上：只有 SCHOOL_ABSORB 才有吸收流程，DUMMY effect 不该进这里。
+                if (aurEff->GetAuraType() != SPELL_AURA_SCHOOL_ABSORB)
+                    return;
+
                 if (!GetCaster())
                     return;
 
@@ -889,10 +899,13 @@ class spell_skovald_aegis_remove : public SpellScriptLoader
 
             void Register() override
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_skovald_aegis_remove_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_skovald_aegis_remove_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_skovald_aegis_remove_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_skovald_aegis_remove_AuraScript::OnAbsorb, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
+                // 本脚本绑 193783(EI1=4 SPELL_AURA_DUMMY) 与 193983(EI1=69 SPELL_AURA_SCHOOL_ABSORB)。
+                // 每个 hook 会独立对全部绑定法术校验，原写法（各自精确）会互相误报共 4 条。
+                // OnRemove 不使用 aurEff，可直接合并；两个吸收钩子靠 handler 内的光环类型守卫
+                // 保证 193783 的 DUMMY effect 不被误处理。两法术 EI1 光环都非空，mask 只含 EI1 一位。
+                OnEffectRemove += AuraEffectRemoveFn(spell_skovald_aegis_remove_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_skovald_aegis_remove_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_ANY);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_skovald_aegis_remove_AuraScript::OnAbsorb, EFFECT_1, SPELL_AURA_ANY);
             }
         };
 

@@ -89,8 +89,6 @@ void ElunaLoader::LoadScripts()
 
     m_cacheState = SCRIPT_CACHE_LOADING;
 
-    uint32 oldMSTime = ElunaUtil::GetCurrTime();
-
     std::string lua_folderpath = sElunaConfig->GetConfig(CONFIG_ELUNA_SCRIPT_PATH);
     const std::string& lua_path_extra = sElunaConfig->GetConfig(CONFIG_ELUNA_REQUIRE_PATH_EXTRA);
     const std::string& lua_cpath_extra = sElunaConfig->GetConfig(CONFIG_ELUNA_REQUIRE_CPATH_EXTRA);
@@ -102,8 +100,8 @@ void ElunaLoader::LoadScripts()
 #endif
 
     printf("\n======================================================\n");
-    printf("[Eluna]: Searching Lua scripts in: %s\n", lua_folderpath.c_str());
-    printf("======================================================\n");
+    printf("Initialize Eluna Lua Engine...\n");
+    printf("[Eluna]: Searching scripts from %s\n", lua_folderpath.c_str());
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -129,7 +127,7 @@ void ElunaLoader::LoadScripts()
     if (!m_requirecPath.empty())
         m_requirecPath.erase(m_requirecPath.end() - 1);
 
-    printf("[Eluna]: Loaded and compiled %u script(s) in %u ms\n", uint32(m_scriptCache.size()), ElunaUtil::GetTimeDiff(oldMSTime));
+    printf("[Eluna]: Loaded %u Lua scripts\n", uint32(m_scriptCache.size()));
     printf("======================================================\n\n");
 
     m_cacheState = SCRIPT_CACHE_READY;

@@ -727,8 +727,11 @@ class spell_tos_infusions : public AuraScript
 
     void Register() override
     {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_tos_infusions::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_tos_infusions::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        // 235213(Light Infusion) 的 EI0 是 226 SPELL_AURA_PERIODIC_DUMMY，
+        // 235240(Fel Infusion)   的 EI0 是 23  SPELL_AURA_PERIODIC_TRIGGER_SPELL，都只有这一个周期 effect。
+        // 每个 hook 会独立对全部绑定法术校验，写两条会互相误报；OnTick 不使用 aurEff，
+        // 故合并为一条 EI0 + SPELL_AURA_ANY：mask 仍只含 EI0 一位，每法术仍每 3 秒触发一次。
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_tos_infusions::OnTick, EFFECT_0, SPELL_AURA_ANY);
     }
 };
 
