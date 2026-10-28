@@ -34,7 +34,7 @@ template<>
 class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creature, WaypointMovementGenerator<Creature>>, public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        explicit WaypointMovementGenerator(uint32 pathId = 0, bool repeating = true, float randomMoveX = 0, float randomMoveY = 0) : _nextMoveTime(0), _pauseTime(0), _recalculateSpeed(false), _isArrivalDone(false), _pathId(pathId), _repeating(repeating), _stalled(false), _pathEnded(false), _movementInterrupted(false), _randomMoveX(randomMoveX), _randomMoveY(randomMoveY) { }
+        explicit WaypointMovementGenerator(uint32 pathId = 0, bool repeating = true, float randomMoveX = 0, float randomMoveY = 0) : _nextMoveTime(0), _pauseTime(0), _recalculateSpeed(false), _isArrivalDone(false), _pathId(pathId), _repeating(repeating), _followBackwards(false), _isReturningToStart(false), _stalled(false), _pathEnded(false), _movementInterrupted(false), _randomMoveX(randomMoveX), _randomMoveY(randomMoveY) { }
 
         ~WaypointMovementGenerator() { _path = nullptr; }
 
@@ -70,6 +70,8 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creat
         bool _isArrivalDone;
         uint32 _pathId;
         bool _repeating;
+        bool _followBackwards;      // waypoint_path flag: walk the nodes back down instead of wrapping to 0
+        bool _isReturningToStart;   // currently walking the path in reverse
         bool _stalled;
         bool _pathEnded;            // last node of a non-repeating path reached: the generator stays idle
         bool _movementInterrupted;  // spline was stopped on the way to the current node by a stun/cast/pause

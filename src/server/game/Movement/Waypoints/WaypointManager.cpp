@@ -25,8 +25,34 @@ void WaypointMgr::Load()
 {
     uint32 oldMSTime = getMSTime();
 
+    QueryResult result;
+
+    // Optional per-path metadata. A missing or empty table means every path keeps the legacy
+    // looping behaviour, so a failed query here is informational rather than an error. It is
+    // loaded before waypoint_data because the waypoint_data_script block below can return early.
+    //       0        1
+    result = WorldDatabase.Query("SELECT PathId, Flags FROM waypoint_path");
+    if (result)
+    {
+        uint32 const knownFlags = uint32(WAYPOINT_PATH_FLAG_FOLLOW_PATH_BACKWARDS_FROM_END);
+
+        do
+        {
+            Field* fields = result->Fetch();
+
+            uint32 pathId = fields[0].GetUInt32();
+            uint32 flags = fields[1].GetUInt32();
+
+            if (flags & ~knownFlags)
+                TC_LOG_ERROR("sql.sql", "waypoint_path: path %u has unknown flag bits 0x%X (known mask 0x%X), ignoring them", pathId, flags, knownFlags);
+
+            _pathFlagsStore[pathId] = flags & knownFlags;
+        }
+        while (result->NextRow());
+    }
+
     //                                                0    1         2           3          4            5           6        7      8       9        10              11
-    QueryResult result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, speed, delay, action, action_chance, delay_chance FROM waypoint_data ORDER BY id, point");
+    result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, speed, delay, action, action_chance, delay_chance FROM waypoint_data ORDER BY id, point");
 
     // An empty waypoint_data must not skip waypoint_data_script below
     if (!result)
@@ -135,6 +161,12 @@ void WaypointMgr::ReloadPath(uint32 id)
     auto itr = _waypointStore.find(id);
     if (itr != _waypointStore.end())
         _waypointStore.erase(itr);
+
+    // Refresh the optional flags entry as well, so a change to waypoint_path is picked up together
+    // with the nodes. Generators that are already running keep their value until they re-load.
+    _pathFlagsStore.erase(id);
+    if (QueryResult flagsResult = WorldDatabase.PQuery("SELECT Flags FROM waypoint_path WHERE PathId = %u", id))
+        _pathFlagsStore[id] = flagsResult->Fetch()[0].GetUInt32() & uint32(WAYPOINT_PATH_FLAG_FOLLOW_PATH_BACKWARDS_FROM_END);
 
     WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_DATA_BY_ID);
     stmt->setUInt32(0, id);

@@ -41,6 +41,12 @@ void WaypointMovementGenerator<Creature>::LoadPath(Creature& creature)
         return;
     }
 
+    // Optional per-path metadata. Bit 0 makes the generator walk the nodes back down to the first
+    // one instead of wrapping from the last node to node 0; paths without a waypoint_path row keep
+    // the legacy behaviour, and a single-node path can never be walked backwards.
+    _followBackwards = (_path->size() >= 2) && ((sWaypointMgr->GetPathFlags(_pathId) & WAYPOINT_PATH_FLAG_FOLLOW_PATH_BACKWARDS_FROM_END) != 0);
+    _isReturningToStart = false;
+
     _nextMoveTime.Reset(0);
     StartMoveNow(creature);
 }
@@ -143,7 +149,25 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature& creature)
             return false;
         }
 
-        _currentNode = (_currentNode + 1) % _path->size();
+        // A backwards path walks 0 1 2 .. n-1 n-2 .. 1 0 1 2 .. so both end nodes are only
+        // visited once per pass, instead of wrapping n-1 straight back to 0 with a visible dash.
+        if (!_followBackwards)
+            _currentNode = (_currentNode + 1) % _path->size();
+        else if (!_isReturningToStart)
+        {
+            if (++_currentNode >= _path->size())   // last node has just been visited, turn around
+            {
+                _currentNode = uint32(_path->size()) - 2;
+                _isReturningToStart = true;
+            }
+        }
+        else if (_currentNode == 0)                // first node reached on the way back, turn around
+        {
+            _currentNode = 1;
+            _isReturningToStart = false;
+        }
+        else
+            --_currentNode;
     }
 
     if (_currentNode >= _path->size())

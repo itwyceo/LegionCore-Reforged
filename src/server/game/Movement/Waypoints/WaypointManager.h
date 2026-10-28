@@ -30,6 +30,13 @@ enum WaypointMoveType
     WAYPOINT_MOVE_TYPE_MAX
 };
 
+// Per-path metadata flags, stored in the optional `waypoint_path` table.
+enum WaypointPathFlags : uint32
+{
+    WAYPOINT_PATH_FLAG_NONE                           = 0x00,
+    WAYPOINT_PATH_FLAG_FOLLOW_PATH_BACKWARDS_FROM_END = 0x01    // after the last node walk the nodes back down to the first one
+};
+
 struct WaypointData
 {
     WaypointData() : id(0), x(0.f), y(0.f), z(0.f), orientation(0.f), delay(0), delay_chance(0), event_id(0), move_type(WAYPOINT_MOVE_TYPE_RUN), speed(0), event_chance(0) { }
@@ -70,11 +77,20 @@ class TC_GAME_API WaypointMgr
             return Trinity::Containers::MapGetValuePtr(_waypointScriptStore, id);
         }
 
+        // Returns the `waypoint_path` flags of a given id, WAYPOINT_PATH_FLAG_NONE when the path
+        // has no row there -- which is the case for every path that was never opted in.
+        uint32 GetPathFlags(uint32 id) const
+        {
+            auto itr = _pathFlagsStore.find(id);
+            return itr != _pathFlagsStore.end() ? itr->second : uint32(WAYPOINT_PATH_FLAG_NONE);
+        }
+
     private:
         WaypointMgr() = default;
 
         WaypointPathContainer _waypointStore;
         WaypointPathContainer _waypointScriptStore;
+        std::unordered_map<uint32, uint32> _pathFlagsStore;   // optional per-path flags, `waypoint_path`
 };
 
 #define sWaypointMgr WaypointMgr::instance()
