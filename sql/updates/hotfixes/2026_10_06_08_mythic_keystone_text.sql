@@ -11,4 +11,4 @@ DELETE FROM `hotfix_data` WHERE `Id` = 9009104;
 INSERT INTO `hotfix_data` (`Id`, `TableHash`, `RecordID`, `Timestamp`, `Deleted`) VALUES
 (9009104, 2442913102, 138019, 0, 0);
 
-UPDATE `world`.`version` SET `hotfix_cache_id` = 437;
+UPDATE `world_legion`.`version` SET `hotfix_cache_id` = 437;
