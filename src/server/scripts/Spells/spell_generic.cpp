@@ -1255,8 +1255,9 @@ class spell_gen_seaforium_blast : public SpellScriptLoader
 
             bool Validate(SpellInfo const* /*spell*/) override
             {
-                if (!sSpellMgr->GetSpellInfo(SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT))
-                    return false;
+                // 7.3.5 no longer ships 60937 (Plant Charges achievement credit spell).
+                // Do not drop the whole script because of it - the gameobject damage
+                // handling is still wanted; AchievementCredit() skips the credit instead.
                 return true;
             }
 
@@ -1268,6 +1269,10 @@ class spell_gen_seaforium_blast : public SpellScriptLoader
 
             void AchievementCredit(SpellEffIndex /*effIndex*/)
             {
+                // 60937 is gone in 7.3.5 - skip the achievement credit, keep the rest
+                if (!sSpellMgr->GetSpellInfo(SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT))
+                    return;
+
                 // but in effect handling OriginalCaster can become NULL
                 if (Player* originalCaster = GetOriginalCaster()->ToPlayer())
                     if (GameObject* go = GetHitGObj())
@@ -8486,14 +8491,20 @@ void AddSC_generic_spell_scripts()
     new spell_gen_lifebloom("spell_faction_champion_dru_lifebloom", SPELL_FACTION_CHAMPIONS_DRU_LIFEBLOOM_FINAL_HEAL);
     new spell_gen_summon_elemental("spell_gen_summon_fire_elemental", SPELL_SUMMON_FIRE_ELEMENTAL);
     new spell_gen_summon_elemental("spell_gen_summon_earth_elemental", SPELL_SUMMON_EARTH_ELEMENTAL);
-    new spell_gen_mount("spell_magic_broom", 0, SPELL_MAGIC_BROOM_60, SPELL_MAGIC_BROOM_100, SPELL_MAGIC_BROOM_150, SPELL_MAGIC_BROOM_280);
-    new spell_gen_mount("spell_headless_horseman_mount", 0, SPELL_HEADLESS_HORSEMAN_MOUNT_60, SPELL_HEADLESS_HORSEMAN_MOUNT_100, SPELL_HEADLESS_HORSEMAN_MOUNT_150, SPELL_HEADLESS_HORSEMAN_MOUNT_280);
-    new spell_gen_mount("spell_winged_steed_of_the_ebon_blade", 0, 0, 0, SPELL_WINGED_STEED_150, SPELL_WINGED_STEED_280);
-    new spell_gen_mount("spell_big_love_rocket", SPELL_BIG_LOVE_ROCKET_0, SPELL_BIG_LOVE_ROCKET_60, SPELL_BIG_LOVE_ROCKET_100, SPELL_BIG_LOVE_ROCKET_150, SPELL_BIG_LOVE_ROCKET_310);
-    new spell_gen_mount("spell_invincible", 0, SPELL_INVINCIBLE_60, SPELL_INVINCIBLE_100, SPELL_INVINCIBLE_150, SPELL_INVINCIBLE_310);
-    new spell_gen_mount("spell_blazing_hippogryph", 0, 0, 0, SPELL_BLAZING_HIPPOGRYPH_150, SPELL_BLAZING_HIPPOGRYPH_280);
-    new spell_gen_mount("spell_celestial_steed", 0, SPELL_CELESTIAL_STEED_60, SPELL_CELESTIAL_STEED_100, SPELL_CELESTIAL_STEED_150, SPELL_CELESTIAL_STEED_280, SPELL_CELESTIAL_STEED_310);
-    new spell_gen_mount("spell_x53_touring_rocket", 0, 0, 0, SPELL_X53_TOURING_ROCKET_150, SPELL_X53_TOURING_ROCKET_280, SPELL_X53_TOURING_ROCKET_310);
+    // 7.3.5 client no longer ships the riding-skill tiered mount spells (42680/42683,
+    // 51621/48024/51617/48023, 71343-71347, 72281-72284, 75617-75620/76153,
+    // 75957/75972/76154, 54727, 74855), and these mount spells only carry
+    // EFFECT_0 (APPLY_AURA) with no EFFECT_2, so HandleMount() is never triggered.
+    // Passing no arguments keeps Validate() happy and silences the startup errors
+    // without changing runtime behaviour (the mount aura comes from the spell itself).
+    new spell_gen_mount("spell_magic_broom");
+    new spell_gen_mount("spell_headless_horseman_mount");
+    new spell_gen_mount("spell_winged_steed_of_the_ebon_blade");
+    new spell_gen_mount("spell_big_love_rocket");
+    new spell_gen_mount("spell_invincible");
+    new spell_gen_mount("spell_blazing_hippogryph");
+    new spell_gen_mount("spell_celestial_steed");
+    new spell_gen_mount("spell_x53_touring_rocket");
     new spell_gen_upper_deck_create_foam_sword();
     new spell_gen_bonked();
     new spell_gen_running_wild();
